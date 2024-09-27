@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine new version
+        id: version
+        shell: bash
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            NEW_TAG="v1.0.0"
+          else
+            VERSION=${LATEST_TAG#v}
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            PATCH=$((PATCH + 1))
+            NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          fi
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Package plugin
+        run: |
+          mkdir EZLoopTools
+          find . -maxdepth 1 -type f -name "*.py" -exec cp {} EZLoopTools/ \;
+          zip -r EZLoopTools-${{ env.NEW_TAG }}.zip EZLoopTools
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          files: EZLoopTools-${{ env.NEW_TAG }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
