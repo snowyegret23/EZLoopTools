@@ -1,7 +1,7 @@
 bl_info = {
     "name": "EZLooptools",
     "author": "Snowyegret",
-    "version": (1, 0, 0),
+    "version": (1, 0, 1),
     "blender": (3, 6, 0),
     "location": "View3D > Sidebar > EZLooptools",
     "description": "Apply LoopTools Flatten, Relax, or Space to faces",
